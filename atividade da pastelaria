@@ -1,0 +1,138 @@
+create database pastelaria;
+use pastelaria;
+
+create table cliente(
+cli_id int primary key auto_increment,
+cli_nome varchar(50),
+cli_apelido varchar(50),
+cli_cpf varchar(50) unique,
+cli_nascimento date,
+cli_telefone varchar(50),
+cli_e_mail varchar(50),
+cli_bairro varchar(50),
+cli_estado varchar(50),
+cli_cidade varchar(50)
+);
+
+
+create table produto(
+pro_id int primary key auto_increment,
+pro_nome varchar(50),
+pro_tipo char,
+pro_fk_recheio int,
+pro_fk_tamanho int,
+pro_fk_categoria int,
+pro_preco float(10,2),-- fazer um trigger para adicionar o valor baseado no tamanho e no recheio
+foreign key (pro_fk_recheio) references recheio (reche_id),
+foreign key (pro_fk_tamanho) references tamanho (tam_id),
+foreign key (pro_fk_categoria) references categoria (cat_id)
+);
+
+create table recheio(
+reche_id int primary key auto_increment,
+reche_tipo varchar(50),
+reche_preco float(10,2)
+);
+
+create table categoria(
+cat_id int primary key auto_increment,
+cat_tipo varchar(50)
+);
+
+create table tamanho(
+tam_id int primary key auto_increment,
+tam_tipo char,
+tam_preco varchar(50)
+);
+
+create table vendas(
+ven_id int primary key auto_increment,
+ven_data date,
+ven_fk_cliente int,
+ven_total float(10,5),
+ven_fk_forma_pagamento int,
+foreign key (ven_fk_cliente) references cliente (cli_id),
+foreign key (ven_fk_forma_pagamento) references forma_pagamento (forpag_id)
+);
+
+create table itens_vendas(
+itven_id int primary key auto_increment,
+itenven_fk_venda int,
+itenven_fk_produto int,
+itenven_quatidade int,
+itenven_unitario float(10,2),
+itenven_valor float(10,5),
+foreign key (itenven_fk_venda) references vendas(ven_id),
+foreign key (itenven_fk_produto) references produto(pro_id)
+);
+
+
+create table forma_pagamento(
+forpag_id int primary key auto_increment,
+forpag_nome varchar(50)
+);
+
+create table recebimento(
+rec_id int primary key auto_increment,
+rec_fk_vendas int,
+rec_valor float (10,2),
+rec_fk_forma_pagamento int,
+rec_data date,
+foreign key (rec_fk_vendas) references vendas (ven_id),
+foreign key (rec_fk_forma_pagamento) references forma_pagamento (forpag_id)
+);
+
+
+-- ================= INSERTS =================
+
+-- Inserindo dados na tabela cliente
+INSERT INTO cliente (cli_nome, cli_apelido, cli_cpf, cli_nascimento, cli_telefone, cli_e_mail, cli_bairro, cli_estado, cli_cidade) 
+VALUES 
+('Alisson', 'Al', '123.456.789-01', '1990-05-15', '(75) 1234-5678', 'Alisson.silva@example.com', 'Centro', 'Gabriela', 'FEIRA-DE-SANTANA'),
+('Aislan', 'cabeça', '987.654.321-09', '1985-08-20', '(75) 9876-5432', 'Aislan.santos@example.com', 'Feira-9', 'BA', 'FEIRA-DE-SANTANA'),
+('Virna', 'Vi', '456.789.123-45', '1978-03-10', '(75) 4567-8901', 'Virna.oliveira@example.com', 'Matinha', 'BA', 'FEIRA-DE-SANTANA'),
+('Ana', 'Ninha', '321.654.987-90', '1995-12-25', '(75) 3210-9876', 'ana.souza@example.com', 'Gabriela', 'BA', 'FEIRA-DE-SANTANA');
+
+-- Inserindo dados na tabela categoria
+INSERT INTO categoria (cat_tipo) VALUES 
+('Comum'),
+('Vegetariano'),
+('Vegano'),
+('Sem-Lactose');
+
+-- Inserindo dados na tabela recheio
+INSERT INTO recheio (reche_tipo, reche_preco) VALUES 
+('Bacon e Queijo', 8.0),
+('Frango e Queijo', 8.0),
+('Queijo Vegano', 9.0),
+('Queijo Comum', 7.0),
+('Carne e Presunto', 6.50);
+
+-- Inserindo dados na tabela tamanho
+INSERT INTO tamanho (tam_tipo, tam_preco) VALUES 
+('P', '10.00'),
+('M', '15.00'),
+('G', '20.00');
+
+-- Inserindo dados na tabela produto
+INSERT INTO produto (pro_nome, pro_tipo, pro_fk_recheio, pro_fk_tamanho, pro_fk_categoria)  
+VALUES ('Pastel', 'C', 1, 3, 1);
+INSERT INTO produto (pro_nome, pro_tipo, pro_fk_recheio, pro_fk_tamanho, pro_fk_categoria)  
+VALUES ('Pastel', 'C', 2, 2, 1);
+INSERT INTO produto (pro_nome, pro_tipo, pro_fk_recheio, pro_fk_tamanho, pro_fk_categoria)  
+VALUES ('Pastel', 'C', 3, 1, 3);
+INSERT INTO produto (pro_nome, pro_tipo, pro_fk_recheio, pro_fk_tamanho, pro_fk_categoria)  
+VALUES ('Pastel', 'C', 5, 3, 2);
+INSERT INTO produto (pro_nome, pro_tipo, pro_fk_recheio, pro_fk_tamanho, pro_fk_categoria)  
+VALUES ('Pastel', 'C', 4, 3, 1);
+INSERT INTO produto (pro_nome, pro_tipo)
+VALUES ('Refrigerante', 'B');
+INSERT INTO produto (pro_nome, pro_tipo)
+VALUES ('Caldo-de-Cana', 'B');
+
+-- Inserindo dados na tabela forma_pagamento
+INSERT INTO forma_pagamento (forpag_nome) VALUES 
+('Dinheiro'),
+('Cartão de Crédito'),
+('Cartão de Débito'),
+('Pix');
