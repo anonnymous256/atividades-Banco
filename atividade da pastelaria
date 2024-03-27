@@ -116,15 +116,15 @@ INSERT INTO tamanho (tam_tipo, tam_preco) VALUES
 
 -- Inserindo dados na tabela produto
 INSERT INTO produto (pro_nome, pro_tipo, pro_fk_recheio, pro_fk_tamanho, pro_fk_categoria)  
-VALUES ('Pastel', 'C', 1, 3, 1);
+VALUES ('Pastel_fsa', 'C', 1, 3, 1);
 INSERT INTO produto (pro_nome, pro_tipo, pro_fk_recheio, pro_fk_tamanho, pro_fk_categoria)  
-VALUES ('Pastel', 'C', 2, 2, 1);
+VALUES ('Pastel_ssa', 'C', 2, 2, 1);
 INSERT INTO produto (pro_nome, pro_tipo, pro_fk_recheio, pro_fk_tamanho, pro_fk_categoria)  
-VALUES ('Pastel', 'C', 3, 1, 3);
+VALUES ('Pastel_rj', 'C', 3, 1, 3);
 INSERT INTO produto (pro_nome, pro_tipo, pro_fk_recheio, pro_fk_tamanho, pro_fk_categoria)  
-VALUES ('Pastel', 'C', 5, 3, 2);
+VALUES ('Pastel_mg', 'C', 5, 3, 2);
 INSERT INTO produto (pro_nome, pro_tipo, pro_fk_recheio, pro_fk_tamanho, pro_fk_categoria)  
-VALUES ('Pastel', 'C', 4, 3, 1);
+VALUES ('Pastel_rs', 'C', 4, 3, 1);
 INSERT INTO produto (pro_nome, pro_tipo)
 VALUES ('Refrigerante', 'B');
 INSERT INTO produto (pro_nome, pro_tipo)
@@ -136,3 +136,81 @@ INSERT INTO forma_pagamento (forpag_nome) VALUES
 ('Cartão de Crédito'),
 ('Cartão de Débito'),
 ('Pix');
+
+-- Inserindo dados na tabela vendas
+INSERT INTO vendas (ven_data, ven_fk_cliente, ven_total, ven_fk_forma_pagamento) 
+VALUES 
+('2024-03-25', 1, 25.00, 1),
+('2024-03-25', 2, 30.00, 2),
+('2024-03-26', 3, 35.00, 3),
+('2024-03-26', 4, 40.00, 4);
+
+-- Inserindo dados na tabela itens_vendas
+INSERT INTO itens_vendas (itenven_fk_venda, itenven_fk_produto, itenven_quatidade, itenven_unitario, itenven_valor) 
+VALUES 
+(1, 1, 2, 10.00, 20.00),
+(1, 6, 1, 5.00, 5.00),
+(2, 2, 1, 15.00, 15.00),
+(2, 7, 2, 3.00, 6.00),
+(3, 3, 3, 11.67, 35.00),
+(4, 4, 2, 20.00, 40.00);
+
+-- Inserindo dados na tabela recebimento
+INSERT INTO recebimento (rec_fk_vendas, rec_valor, rec_fk_forma_pagamento, rec_data) 
+VALUES 
+(1, 25.00, 1, '2024-03-25'),
+(2, 30.00, 2, '2024-03-25'),
+(3, 35.00, 3, '2024-03-26'),
+(4, 40.00, 4, '2024-03-26');
+
+-- ===============ATIVIDADE===============
+
+--  1. Liste os nomes de todos os pastéis veganos vendidos para pessoas com mais de 18 anos.
+
+SELECT DISTINCT pro_nome as pastel_vegano
+FROM produto 
+INNER JOIN vendas  ON pro_id = ven_id
+INNER JOIN cliente  ON ven_fk_cliente = cli_id
+INNER JOIN categoria  ON pro_fk_categoria = cat_id
+INNER JOIN recheio ON pro_fk_recheio = reche_id
+WHERE cat_tipo = 'Vegano' 
+AND DATEDIFF(CURRENT_DATE(), cli_nascimento) / 365 > 18;
+
+-- 2. Liste os clientes com maior número de pedidos realizados em 1 ano agrupados por mês
+
+SELECT YEAR(ven_data) AS Ano, MONTH(ven_data) AS Mes, cli_nome as nome, COUNT(ven_id) AS NumeroPedidos
+FROM vendas 
+INNER JOIN cliente  ON ven_fk_cliente = cli_id
+GROUP BY YEAR(ven_data), MONTH(ven_data), cli_id, cli_nome
+ORDER BY Ano,Mes,NumeroPedidos DESC;
+
+-- 3. Liste todos os pastéis que possuem bacon e queijo em seu recheio.
+
+SELECT pro_id as id, pro_nome as nome, reche_tipo as recheio
+FROM produto 
+INNER JOIN recheio  ON pro_fk_recheio = reche_id
+WHERE reche_tipo = 'Bacon e Queijo';
+
+-- 4. Mostre o valor de venda total de todos os pastéis cadastrados no sistema.
+
+SELECT SUM(reche_preco) AS ValorTotalVenda
+FROM recheio;
+
+-- 5. Liste todos os pedidos onde há pelo menos um pastel e uma bebida.
+
+SELECT DISTINCT ven_id as id, ven_data as data, cli_nome as nome
+FROM vendas 
+INNER JOIN cliente  ON ven_fk_cliente = cli_id
+INNER JOIN itens_vendas  ON ven_id = itenven_fk_venda
+INNER JOIN produto  ON itenven_fk_produto = pro_id
+WHERE pro_tipo = 'C' OR pro_tipo = 'B';
+
+-- 6. Liste quais são os pastéis mais vendidos, incluindo a quantidade de vendas em ordem crescente.
+
+SELECT itenven_fk_produto AS id, pro_nome as nome, COUNT(*) AS QuantidadeVendas
+FROM itens_vendas 
+INNER JOIN produto  ON itenven_fk_produto = pro_id
+GROUP BY itenven_fk_produto, pro_nome
+ORDER BY QuantidadeVendas ASC;
+
+
